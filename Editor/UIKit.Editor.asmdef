@@ -1,0 +1,10 @@
+{
+	"name": "UIKit.Editor",
+	"rootNamespace": "UIKit.Editor",
+	"references": [
+		"UIKit"
+	],
+	"includePlatforms": [
+		"Editor"
+	]
+}
