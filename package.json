@@ -3,9 +3,13 @@
 	"version": "0.1.0",
 	"displayName": "UIKit",
 	"description": "Unity UI Framework",
-	"unity": "2021.3",
+	"unity": "2023.1",
 	"author": {
 		"name": "ddukbaek2",
 		"url": "https://github.com/ddukbaek2"
+	},
+	"dependencies": {
+		"com.unity.ugui": "2.0.0",
+		"com.unity.textmeshpro": "4.0.0"
 	}
 }
