@@ -10,5 +10,12 @@
 	},
 	"dependencies": {
 		"com.unity.ugui": "2.0.0"
-	}
+	},
+	"samples": [
+		{
+			"displayName": "Example 1",
+			"description": "Default Start Example.",
+			"path": "Samples~/Example_1"
+		}
+	]
 }
