@@ -29,7 +29,7 @@ public class UIEmptyState : UIModalState
 	protected override UIView OnViewLoadStart()
 	{
 		// 타이틀 패널 생성.
-		var view = UIView.CreateUIViewFromAsset<UIDesktopPanel>();
+		var view = UIView.CreateUIViewFromAsset<UIEmptyPanel>();
 		// var verticalLayoutGroupView = view.GetView("VerticalLayoutGroup");
 
 		// // 종료 버튼 등록.
