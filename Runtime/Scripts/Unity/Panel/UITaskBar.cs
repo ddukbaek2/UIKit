@@ -6,7 +6,7 @@ namespace UIKit
 	/// <summary>
 	/// 작업표시줄.
 	/// </summary>
-	public class UITaskBar : UIView
+	public class UITaskBar : UIPanel
 	{
 	}
 }
