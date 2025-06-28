@@ -14,6 +14,6 @@ public static class UnityApplication
 	private static void RuntimeInitializeOnLoad()
 	{
 		Debug.Log("UnityApplication.RuntimeInitializeOnLoad()");
-		UIApplication.LaunchApplication(new UIExampleState());
+		UIApplication.LaunchApplication(new UIEmptyState());
 	}
 }

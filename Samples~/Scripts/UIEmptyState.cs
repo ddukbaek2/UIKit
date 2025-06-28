@@ -4,14 +4,14 @@ using UnityEngine.UI;
 
 
 /// <summary>
-/// 샘플 화면.
+/// 빈 화면.
 /// </summary>
-public class UIExampleState : UIModalState
+public class UIEmptyState : UIModalState
 {
 	/// <summary>
 	/// 생성됨.
 	/// </summary>
-	public UIDesktopState() : base()
+	public UIEmptyState() : base()
 	{
 	}
 
