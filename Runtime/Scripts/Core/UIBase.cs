@@ -23,20 +23,22 @@ namespace UIKit
 		{
 			get
 			{
-#if UNITY_EDITOR_OSX
-				if (didAwake)
+				if (m_RectTransform == null)
 				{
-					return m_RectTransform;
+					m_RectTransform = GetComponent<RectTransform>();
+					if (m_RectTransform == null)
+					{
+						throw new UnityException("m_RectTransform is null.");
+					}
+					else
+					{
+						return m_RectTransform;
+					}
 				}
 				else
 				{
-					if (m_RectTransform == null)
-						m_RectTransform = GetComponent<RectTransform>();
 					return m_RectTransform;
 				}
-#else
-				return m_RectTransform;
-#endif
 			}
 		}
 
