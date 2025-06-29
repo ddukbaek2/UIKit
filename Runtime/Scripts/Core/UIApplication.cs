@@ -63,7 +63,6 @@ namespace UIKit
 			obj.name = "EventSystem";
 			obj.transform.SetParent(m_UIKitTransform);
 			m_EventSystem = obj.GetComponent<EventSystem>();
-			// GameObject.DontDestroyOnLoad(obj);
 
 			// 객체 등록.
 			Repository.Register<UIApplication>(this);
@@ -195,6 +194,18 @@ namespace UIKit
 			var application = new UIApplication();
 			application.AddScene(new UIWindowScene(state, application));
 			application.Launch();
+		}
+
+		/// <summary>
+		/// 종료.
+		/// </summary>
+		public static void ExitApplication()
+		{
+#if UNITY_EDITOR
+			UnityEditor.EditorApplication.ExitPlaymode();
+#else
+			Application.Quit();
+#endif
 		}
 	}
 }

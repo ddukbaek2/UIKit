@@ -44,11 +44,7 @@ public class UIEmptyState : UIModalState
 	/// </summary>
 	private void OnClickExit()
 	{
-		Debug.Log("UIDesktopState.OnClickExit()");
-#if UNITY_EDITOR
-		UnityEditor.EditorApplication.ExitPlaymode();
-#else
-		Application.Quit();
-#endif
+		Debug.Log("UIEmptyState.OnClickExit()");
+		UIApplication.ExitApplication();
 	}
 }
