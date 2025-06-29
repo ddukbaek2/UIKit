@@ -39,8 +39,8 @@ namespace UIKit
 		/// <summary>
 		/// 이벤트 시스템 프로퍼티.
 		/// </summary>
+		public EventSystem EventSystem { set => SetEventSystem(value); get => m_EventSystem; }
 
-		public EventSystem EventSystem => m_EventSystem;
 		/// <summary>
 		/// 씬 목록 프로퍼티.
 		/// </summary>
@@ -49,7 +49,7 @@ namespace UIKit
 		/// <summary>
 		/// 생성됨.
 		/// </summary>
-		public UIApplication(UIScene scene = null) : base()
+		public UIApplication(UIScene scene = null, bool useDefaultEventSystem = true) : base()
 		{
 			// 루트 트랜스폼 생성.
 			var obj = new GameObject("UIKit");
@@ -58,11 +58,15 @@ namespace UIKit
 			m_UIKitTransform = obj.GetComponent<Transform>();
 
 			// 이벤트 시스템 생성.
-			var asset = Resources.Load<GameObject>("EventSystem");
-			obj = GameObject.Instantiate<GameObject>(asset);
-			obj.name = "EventSystem";
-			obj.transform.SetParent(m_UIKitTransform);
-			m_EventSystem = obj.GetComponent<EventSystem>();
+			if (useDefaultEventSystem)
+			{
+				var asset = Resources.Load<GameObject>("EventSystem");
+				obj = GameObject.Instantiate<GameObject>(asset);
+				obj.name = "EventSystem";
+				obj.transform.SetParent(m_UIKitTransform);
+				var eventSystem = obj.GetComponent<EventSystem>();
+				SetEventSystem(eventSystem);
+			}
 
 			// 객체 등록.
 			Repository.Register<UIApplication>(this);
@@ -77,10 +81,7 @@ namespace UIKit
 		/// </summary>
 		protected override void OnDispose(bool explicitDisposing)
 		{
-			if (m_EventSystem != null)
-			{
-				GameObject.Destroy(m_EventSystem.gameObject);
-			}
+			SetEventSystem(null);
 		}
 
 		/// <summary>
@@ -171,6 +172,19 @@ namespace UIKit
 				var scene = scenes[i];
 				RemoveScene(scene);
 			}
+		}
+
+		/// <summary>
+		/// 이벤트시스템 설정.
+		/// </summary>
+		public void SetEventSystem(EventSystem eventSystem)
+		{
+			if (m_EventSystem != null)
+			{
+				GameObject.Destroy(m_EventSystem.gameObject);
+			}
+
+			m_EventSystem = eventSystem;
 		}
 
 		/// <summary>
