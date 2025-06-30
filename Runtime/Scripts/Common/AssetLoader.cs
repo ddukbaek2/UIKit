@@ -48,7 +48,7 @@ namespace UIKit
 		/// <summary>
 		/// 애셋 로드.
 		/// </summary>
-		public static UnityEngine.Object LoadAsset(string assetPath)
+		public static UnityEngine.Object LoadAsset(string assetPath, Type assetType)
 		{
 			try
 			{
@@ -68,7 +68,7 @@ namespace UIKit
 		{
 			try
 			{
-				var asset = Resources.Load<TAsset>(assetPath, assetType);
+				var asset = Resources.Load<TAsset>(assetPath);
 				return asset;
 			}
 			catch (Exception exception)
@@ -118,7 +118,7 @@ namespace UIKit
 		{
 			try
 			{
-				var asset = AssetLoader.LoadAsset<GameObject>(asetPath);
+				var asset = AssetLoader.LoadAsset<GameObject>(assetPath);
 				var obj = GameObject.Instantiate<GameObject>(asset);
 				return obj;
 			}
@@ -135,7 +135,7 @@ namespace UIKit
 		{
 			try
 			{
-				var asset = AssetLoader.Instantiate(instanceType, typeof(GameObject));
+				var asset = AssetLoader.LoadAssetFromAssetPath(instanceType, typeof(GameObject));
 				var obj = GameObject.Instantiate(asset);
 				return (GameObject)obj;
 			}
@@ -148,7 +148,7 @@ namespace UIKit
 		/// <summary>
 		/// 대상 클래스의 애셋 경로 어트리뷰트에 설정된 게임 오브젝트 로드하여 생성.
 		/// </summary>
-		public static GameObject InstantiateWithComponentFromAssetPath<TClass>() where TClass : class
+		public static GameObject InstantiateFromAssetPath<TClass>() where TClass : class
 		{
 			try
 			{
@@ -165,7 +165,7 @@ namespace UIKit
 		/// <summary>
 		/// 대상 컴포넌트 타입의 애셋 경로 어트리뷰트에 설정된 게임 오브젝트 로드하여 생성.
 		/// </summary>
-		public static Component InstantiateWithComponent(Type instanceType, Type parentType = null)
+		public static Component InstantiateWithComponentFromAssetPath(Type instanceType, Type parentType = null)
 		{
 			var component = default(Component);
 			try
@@ -195,7 +195,7 @@ namespace UIKit
 		public static TComponent InstantiateWithComponentFromAssetPath<TComponent>(Type parentType = null) where TComponent : MonoBehaviour
 		{
 			var instanceType = typeof(TComponent);
-			var component = AssetLoader.InstantiateWithComponent(instanceType, parentType);
+			var component = AssetLoader.InstantiateWithComponentFromAssetPath(instanceType, parentType);
 			return component as TComponent;
 		}
 	}

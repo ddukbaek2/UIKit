@@ -14,7 +14,7 @@ namespace UIKit
 			SetApplication(application);
 
 			// 기본 UIWindow 로드.
-			var window = AssetLoader.InstantiateWithComponent<UIWindow>();
+			var window = (UIWindow)AssetLoader.InstantiateWithComponentFromAssetPath<UIWindow>();
 
 			// 윈도우를 소유한 씬을 설정.
 			window.SetScene(this);

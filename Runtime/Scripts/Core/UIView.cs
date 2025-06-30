@@ -238,7 +238,7 @@ namespace UIKit
 		{
 			try
 			{
-				var component = AssetLoader.InstantiateWithComponent(instanceType, typeof(UIView));
+				var component = AssetLoader.InstantiateWithComponentFromAssetPath(instanceType, typeof(UIView));
 				return component as UIView;
 			}
 			catch (Exception exception)

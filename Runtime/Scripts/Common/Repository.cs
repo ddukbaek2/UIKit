@@ -115,7 +115,7 @@ namespace UIKit
 				{
 					try
 					{
-						component = AssetLoader.InstantiateWithComponent(instanceType);
+						component = AssetLoader.InstantiateWithComponentFromAssetPath(instanceType);
 						instance = component;
 					}
 					catch// (Exception exception)
