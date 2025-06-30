@@ -46,14 +46,46 @@ namespace UIKit
 		}
 
 		/// <summary>
+		/// 애셋 로드.
+		/// </summary>
+		public static UnityEngine.Object LoadAsset(string assetPath)
+		{
+			try
+			{
+				var asset = Resources.Load(assetPath, assetType);
+				return asset;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}
+
+		/// <summary>
+		/// 애셋 로드.
+		/// </summary>
+		public static TAsset LoadAsset<TAsset>(string assetPath) where TAsset : UnityEngine.Object
+		{
+			try
+			{
+				var asset = Resources.Load<TAsset>(assetPath, assetType);
+				return asset;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}
+
+		/// <summary>
 		/// 대상 클래스 타입의 애셋 경로 어트리뷰트에서 찾아낸 실제 애셋을 로드.
 		/// </summary>
-		public static UnityEngine.Object LoadAsset(Type instanceType, Type assetType)
+		public static UnityEngine.Object LoadAssetFromAssetPath(Type instanceType, Type assetType)
 		{
 			try
 			{
 				var assetPath = AssetLoader.GetAssetPath(instanceType);
-				var asset = Resources.Load(assetPath, assetType);
+				var asset = AssetLoader.LoadAsset(assetPath, assetType);
 				return asset;
 			}
 			catch (Exception exception)
@@ -65,13 +97,30 @@ namespace UIKit
 		/// <summary>
 		/// 대상 클래스의 애셋 경로 어트리뷰트에서 찾아낸 실제 애셋을 로드.
 		/// </summary>
-		public static TObject LoadAsset<TClass, TObject>() where TClass : class where TObject : UnityEngine.Object
+		public static TObject LoadAssetFromAssetPath<TClass, TObject>() where TClass : class where TObject : UnityEngine.Object
 		{
 			try
 			{
 				var assetPath = AssetLoader.GetAssetPath<TClass>();
-				var asset = Resources.Load<TObject>(assetPath);
+				var asset = AssetLoader.LoadAsset<TObject>(assetPath);
 				return asset;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}
+
+		/// <summary>
+		/// 애셋 경로를 통해 게임오브젝트 로드하여 생성.
+		/// </summary>
+		public static GameObject Instantiate(string assetPath)
+		{
+			try
+			{
+				var asset = AssetLoader.LoadAsset<GameObject>(asetPath);
+				var obj = GameObject.Instantiate<GameObject>(asset);
+				return obj;
 			}
 			catch (Exception exception)
 			{
@@ -82,11 +131,11 @@ namespace UIKit
 		/// <summary>
 		/// 대상 클래스 타입의 애셋 경로 어트리뷰트에 설정된 게임 오브젝트 로드하여 생성.
 		/// </summary>
-		public static GameObject Instantiate(Type instanceType)
+		public static GameObject InstantiateFromAssetPath(Type instanceType)
 		{
 			try
 			{
-				var asset = AssetLoader.LoadAsset(instanceType, typeof(GameObject));
+				var asset = AssetLoader.Instantiate(instanceType, typeof(GameObject));
 				var obj = GameObject.Instantiate(asset);
 				return (GameObject)obj;
 			}
@@ -99,11 +148,11 @@ namespace UIKit
 		/// <summary>
 		/// 대상 클래스의 애셋 경로 어트리뷰트에 설정된 게임 오브젝트 로드하여 생성.
 		/// </summary>
-		public static GameObject Instantiate<TClass>() where TClass : class
+		public static GameObject InstantiateWithComponentFromAssetPath<TClass>() where TClass : class
 		{
 			try
 			{
-				var asset = AssetLoader.LoadAsset<TClass, GameObject>();
+				var asset = AssetLoader.LoadAssetFromAssetPath<TClass, GameObject>();
 				var obj = GameObject.Instantiate<GameObject>(asset);
 				return obj;
 			}
@@ -121,7 +170,7 @@ namespace UIKit
 			var component = default(Component);
 			try
 			{
-				var obj = AssetLoader.Instantiate(instanceType);
+				var obj = AssetLoader.InstantiateFromAssetPath(instanceType);
 				obj.name = instanceType.Name;
 				component = obj.GetComponent(instanceType);
 				if (component == null)
@@ -143,7 +192,7 @@ namespace UIKit
 		/// <summary>
 		/// 대상 컴포넌트의 애셋 경로 어트리뷰트에 설정된 게임 오브젝트 로드하여 생성.
 		/// </summary>
-		public static TComponent InstantiateWithComponent<TComponent>(Type parentType = null) where TComponent : MonoBehaviour
+		public static TComponent InstantiateWithComponentFromAssetPath<TComponent>(Type parentType = null) where TComponent : MonoBehaviour
 		{
 			var instanceType = typeof(TComponent);
 			var component = AssetLoader.InstantiateWithComponent(instanceType, parentType);

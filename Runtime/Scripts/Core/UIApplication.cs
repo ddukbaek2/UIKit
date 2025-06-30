@@ -57,7 +57,7 @@ namespace UIKit
 			GameObject.DontDestroyOnLoad(obj);
 			m_UIKitTransform = obj.GetComponent<Transform>();
 
-			// 이벤트 시스템 생성.
+			// 기본 벤트 시스템 생성.
 			if (useDefaultEventSystem)
 			{
 				var asset = Resources.Load<GameObject>("EventSystem");
