@@ -49,8 +49,10 @@ namespace UIKit
 		{
 			base.Awake();
 
+			var type = GetType();
+			Debug.Log($"UIBase.Awake(): Class: \"{type.Name}\"");
+
 			m_RectTransform = GetComponent<RectTransform>();
-			Debug.Log($"UIBase.Awake(): {name}");
 		}
 
 		/// <summary>

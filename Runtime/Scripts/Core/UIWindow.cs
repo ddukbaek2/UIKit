@@ -46,7 +46,8 @@ namespace UIKit
 		{
 			base.Awake();
 
-			GameObject.DontDestroyOnLoad(gameObject);
+			var type = GetType();
+			Debug.Log($"UIWindow.Awake(): Class: \"{type.Name}\"");
 
 			m_Scene = null;
 			m_State = null;

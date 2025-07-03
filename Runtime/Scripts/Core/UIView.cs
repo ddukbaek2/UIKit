@@ -66,6 +66,9 @@ namespace UIKit
 		{
 			base.Awake();
 
+			var type = GetType();
+			Debug.Log($"UIView.Awake(): Class: \"{type.Name}\"");
+			
 			m_Parent = null;
 			m_Children = new List<UIView>();
 		}
