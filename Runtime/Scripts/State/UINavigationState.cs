@@ -42,13 +42,15 @@ namespace UIKit
 		{
 			base.OnDispose(explicitDisposing);
 		}
-
+		
 		/// <summary>
-		/// 현재 상태 안에서 다음 상태 진입.
+		/// 현재 상태 안에서 다음 상태 쌓고 진입.
 		/// </summary>
-		public void Push(UIState state, bool animated)
+		public void Push(UIState pushState, bool animated)
 		{
-			m_Stack.Push(state);
+			m_Stack.Push(pushState);
+			
+			UIState.EnterStateProcess(Window, this, pushState, animated);
 		}
 
 		/// <summary>
@@ -59,8 +61,14 @@ namespace UIKit
 			if (m_Stack.Count <= 1)
 				return;
 
-			var state = m_Stack.Pop();
-			UIState.ExitStateProcess(state, animated);
+			var currentState = m_Stack.Pop();
+			var previousState = default(UIState);
+			if (m_Stack.Count > 0)
+			{
+				previousState = m_Stack.Peek();
+			}
+			
+			UIState.ExitStateProcess(currentState, previousState, animated);
 		}
 	}
 }

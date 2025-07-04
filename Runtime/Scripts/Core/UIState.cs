@@ -18,7 +18,7 @@ namespace UIKit
 		/// <summary>
 		/// 현재 상태를 실행한 이전 상태.
 		/// </summary>
-		private UIState m_PreviousState;
+		private UIState m_PresentingState;
 
 		/// <summary>
 		/// 뷰.
@@ -29,7 +29,8 @@ namespace UIKit
 		/// <summary>
 		/// 현재 상태를 실행한 이전 상태 프로퍼티.
 		/// </summary>
-		public UIState PreviousState => m_PreviousState;
+		// public UIState PresentingState { set => SetPresentingState(value); get => m_PresentingState; }
+		public UIState PresentingState => m_PresentingState;
 
 		/// <summary>
 		/// 윈도우 프로퍼티.
@@ -47,7 +48,7 @@ namespace UIKit
 		public UIState(UIView view = null, UIWindow window = null) : base()
 		{
 			m_Window = null;
-			m_PreviousState = null;
+			m_PresentingState = null;
 			m_View = null;
 
 			SetWindow(window);
@@ -81,7 +82,6 @@ namespace UIKit
 		/// </summary>
 		protected virtual void OnEnterStart(UIState previousState, bool animated)
 		{
-			m_PreviousState = previousState;
 		}
 
 		/// <summary>
@@ -103,6 +103,14 @@ namespace UIKit
 		/// </summary>
 		protected virtual void OnExitComplete()
 		{
+		}
+		
+		/// <summary>
+		/// 현재 상태를 프레젠팅 한 상태.
+		/// </summary>
+		internal void SetPresentingState(UIState state)
+		{
+			m_PresentingState = state;
 		}
 
 		/// <summary>
@@ -147,6 +155,7 @@ namespace UIKit
 		{
 			try
 			{
+				nextState.SetPresentingState(this);
 				UIState.EnterStateProcess(Window, this, nextState, animated);
 			}
 			catch (Exception exception)
@@ -162,7 +171,7 @@ namespace UIKit
 		{
 			try
 			{
-				UIState.ExitStateProcess(this, animated);
+				UIState.ExitStateProcess(this,  m_PresentingState, animated);
 			}
 			catch (Exception exception)
 			{
@@ -210,16 +219,28 @@ namespace UIKit
 		/// <summary>
 		/// 상태 탈출 프로세스.
 		/// </summary>
-		internal static void ExitStateProcess(UIState state, bool animated)
+		internal static void ExitStateProcess(UIState currentState, UIState previousState, bool animated)
 		{
-			if (state == null)
+			if (currentState == null)
 				throw new ArgumentNullException();
 
-			// 탈출.
-			state.OnExitStart(animated);
-			var panel = state.View as UIPanel;
-			panel.SetVisible(false, animated);
-			state.OnExitComplete();
+			// 이전 상태 시작 처리.
+			if (previousState != null)
+			{
+				previousState.OnEnterStart(null, animated);
+				previousState.View.SetVisible(true, false);
+			}
+			
+			// 현재 상태 처리.
+			currentState.OnExitStart(animated);
+			currentState.View.SetVisible(false, animated);
+			currentState.OnExitComplete();
+			
+			// 이전 상태 완료 처리.
+			if (previousState != null)
+			{
+				previousState.OnEnterComplete();
+			}
 		}
 	}
 }

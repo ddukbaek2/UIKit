@@ -18,12 +18,12 @@ namespace UIKit
 
 			// 윈도우를 소유한 씬을 설정.
 			window.SetScene(this);
-			
-			// 윈도우에서 처리할 상태를 설정.
-			window.SetState(state);
-
+		
 			// 윈도우를 씬에 추가.
 			AddWindow(window);
+
+			// 윈도우에서 처리할 상태를 설정.
+			window.SetRootState(state);
 		}
 
 		/// <summary>

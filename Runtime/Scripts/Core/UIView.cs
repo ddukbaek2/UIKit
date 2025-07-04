@@ -2,17 +2,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 
 namespace UIKit
 {
 	/// <summary>
 	/// 물리적 UI 단위 처리.
+	/// <para>규칙1 : 모든 UIView가 부착된 루트 오브젝트에는 Image + Mask를 둔다.</para>
 	/// </summary>
-	[RequireComponent(typeof(RectTransform))]
+	[RequireComponent(typeof(RectTransform), typeof(Image))]
 	public class UIView : UIBase
 	{
 		#region INSPECTOR
+		[SerializeField] private Image m_BackgroundImage;
+		[SerializeField] private Mask m_Mask;
+		// [SerializeField] private bool m_ClipsToBounds;
 		#endregion
 
 		/// <summary>
@@ -60,17 +65,76 @@ namespace UIKit
 		public List<UIView> Children => m_Children;
 
 		/// <summary>
+		/// 배경색 프로퍼티.
+		/// </summary>
+		public Color BackgroundColor { set => SetBackgroundImageColor(value); get => m_BackgroundImage?.color ?? Color.clear; }
+
+		// /// <summary>
+		// /// 부모의 위치 + 크기가 고려된 위치 + 크기 프로퍼티.
+		// /// </summary>
+		// public Rect Frame
+		// {
+		// 	
+		// }
+		
+		// /// <summary>
+		// /// 자신의 위치 + 크기 프로퍼티.
+		// /// </summary>
+		// public Rect Bounds
+		// {
+		// 	set
+		// 	{
+		// 		
+		// 	}
+		// 	get
+		// 	{
+		// 		
+		// 	}
+		// }
+		
+		/// <summary>
+		/// 마스킹 처리 프로퍼티.
+		/// </summary>
+		public bool ClipsToBounds
+		{
+			set
+			{
+				if (m_Mask == null)
+					return;
+				m_Mask.enabled = value;
+			}
+			get
+			{
+				if (m_Mask == null)
+					return false;
+				return m_Mask.enabled;
+			}
+		}
+		
+		/// <summary>
 		/// 생성됨.
 		/// </summary>
 		protected override void Awake()
 		{
 			base.Awake();
-
+			
+			// 좌측상단 기준 셋업.
+			m_RectTransform.pivot = new Vector2(0f, 1f);
+			m_RectTransform.anchorMin = new Vector2(0f, 1f);
+			m_RectTransform.anchorMax = new Vector2(0f, 1f);
+			m_RectTransform.anchoredPosition = new Vector2(0f, 0f);
+			
 			var type = GetType();
 			Debug.Log($"UIView.Awake(): Class: \"{type.Name}\"");
+
+			if (m_BackgroundImage == null)
+				m_BackgroundImage = GetComponent<Image>();
+			if (m_Mask == null)
+				m_Mask = GetComponent<Mask>();
 			
 			m_Parent = null;
 			m_Children = new List<UIView>();
+			ClipsToBounds = false;
 		}
 
 		/// <summary>
@@ -87,46 +151,116 @@ namespace UIKit
 		}
 
 		/// <summary>
-		/// 크기가 변경됨.
-		/// </summary>
-		protected override void OnRectTransformDimensionsChange()
-		{
-			base.OnRectTransformDimensionsChange();
-		}
-
-		/// <summary>
 		/// 부모가 변경됨.
 		/// </summary>
 		protected override void OnTransformParentChanged()
 		{
 			base.OnTransformParentChanged();
+			UpdateViewHierarchy();
+		}
 
-			// 직계 부모가 변경 되었을 때, 직계 부모의 변경을 통지한다.
-			var parentView = RectTransform.parent.GetComponent<UIView>();
-			if (parentView != null)
+		/// <summary>
+		/// 자식이 변경됨.
+		/// </summary>
+		protected override void OnTransformChildrenChanged()
+		{
+			base.OnTransformChildrenChanged();
+			UpdateViewHierarchy();
+		}
+		
+		/// <summary>
+		/// UIView 계층구조 갱신.
+		/// </summary>
+		public void UpdateViewHierarchy(Action<UIView> onParentChanged = null, Action<UIView> onChildAdded = null, Action<UIView> onChildRemoved = null, Action<int, int, UIView> onChildChanged = null)
+		{
+			// 부모 변경 감지.
+			var parentTransform = RectTransform.parent;
+			if (parentTransform != null)
 			{
-				OnParentViewChanged(parentView);
+				var parent = parentTransform.GetComponent<UIView>();
+				if (m_Parent == null)
+				{
+					if (parent != null)
+					{
+						m_Parent = parent;
+						onParentChanged?.Invoke(m_Parent);
+					}
+				}
+				else if (parent == null)
+				{
+					m_Parent = null;
+					onParentChanged?.Invoke(m_Parent);
+				}
+				else if (m_Parent != parent)
+				{
+					m_Parent = parent;
+					onParentChanged?.Invoke(m_Parent);
+				}
+			}
+			else
+			{
+				if (m_Parent != null)
+				{
+					m_Parent = null;
+					onParentChanged?.Invoke(m_Parent);
+				}
 			}
 
-			// 직계 부모가 변경되었을 때, 직계 부모에게 직계 자식의 변경을 통지한다.
-			if (m_Parent != null)
-				m_Parent.OnChildViewChanged(this);
-		}
+			// 자식 변경 감지.
+			var children = new List<UIView>();
+			var childCount = RectTransform.childCount;
+			for (var i = 0; i < childCount; ++i)
+			{
+				var childTransform = m_RectTransform.GetChild(i);
+				var child = childTransform.GetComponent<UIView>();
+				if (child == null)
+					continue;
+				
+				children.Add(child);
+			}
+			
+			// 추가됨.
+			for (var i = 0; i < children.Count; ++i)
+			{
+				var child = children[i];
+				if (m_Children.Contains(child))
+					continue;
 
-		/// <summary>
-		/// 직계 부모가 변경됨.
-		/// </summary>
-		protected virtual void OnParentViewChanged(UIView parent)
-		{
-		}
+				onChildAdded?.Invoke(child);
+			}
+			
+			// 제거됨.
+			for (var i = 0; i < m_Children.Count; ++i)
+			{
+				var child = m_Children[i];
+				if (child == null || children.Contains(child))
+					continue;
+				
+				onChildRemoved?.Invoke(child);
+			}
 
-		/// <summary>
-		/// 직계 자식이 변경됨.
-		/// </summary>
-		protected virtual void OnChildViewChanged(UIView view)
-		{
-		}
+			// 순서 변경됨.
+			for (var i = 0; i < m_Children.Count; ++i)
+			{
+				var child = m_Children[i];
+				var nextIndex = children.IndexOf(child);
 
+				// 제거된 것 제외.
+				if (nextIndex == -1)
+					continue;
+
+				// 이전과 인덱스가 같은 것 제외.
+				if (i == nextIndex)
+					continue;
+				
+				onChildChanged?.Invoke(i, nextIndex, child);
+			}
+
+			// 덮어쓰기.
+			m_Children.Clear();
+			m_Children.AddRange(children);
+		}
+		
 		/// <summary>
 		/// 현재 뷰의 상태 설정.
 		/// </summary>
@@ -139,12 +273,12 @@ namespace UIKit
 		/// <summary>
 		/// 직계 부모 뷰 설정.
 		/// </summary>
-		public void SetParent(UIView view)
+		public void SetParent(UIView parentView)
 		{
-			m_Parent = view;
+			m_Parent = parentView;
 			if (m_Parent != null)
 			{
-				SetParentRectTransform(view.RectTransform);
+				SetParentRectTransform(parentView.RectTransform);
 			}
 		}
 
@@ -191,11 +325,36 @@ namespace UIKit
 		/// <summary>
 		/// 직계 자식으로 해당 뷰가 포함되어있는지 여부.
 		/// </summary>
-		public bool HasView(UIView view)
+		public bool HasChild(UIView view)
 		{
 			return m_Children.Contains(view);
 		}
 
+		/// <summary>
+		/// 배경 이미지 색상 조정.
+		/// </summary>
+		public void SetBackgroundImageColor(Color color)
+		{
+			if (m_BackgroundImage == null)
+				return;
+			
+			m_BackgroundImage.color = color;
+		}
+		
+		/// <summary>
+		/// 보이기/감추기 설정.
+		/// <para>UIView는 투명도 처리를 지원하지 않음.</para>
+		/// </summary>
+		public virtual void SetVisible(bool visible, bool animated)
+		{
+			if (animated)
+			{
+				Debug.LogWarning("[UIView] SetVisible() is not supported animation.");
+			}
+			
+			gameObject.SetActive(visible);
+		}
+		
 		/// <summary>
 		/// 새로운 UIView 생성.
 		/// </summary>

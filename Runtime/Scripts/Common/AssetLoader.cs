@@ -120,6 +120,7 @@ namespace UIKit
 			{
 				var asset = AssetLoader.LoadAsset<GameObject>(assetPath);
 				var obj = GameObject.Instantiate<GameObject>(asset);
+				obj.name = asset.name;
 				return obj;
 			}
 			catch (Exception exception)
@@ -137,6 +138,7 @@ namespace UIKit
 			{
 				var asset = AssetLoader.LoadAssetFromAssetPath(instanceType, typeof(GameObject));
 				var obj = GameObject.Instantiate(asset);
+				obj.name = asset.name;
 				return (GameObject)obj;
 			}
 			catch (Exception exception)
@@ -154,6 +156,7 @@ namespace UIKit
 			{
 				var asset = AssetLoader.LoadAssetFromAssetPath<TClass, GameObject>();
 				var obj = GameObject.Instantiate<GameObject>(asset);
+				obj.name = asset.name;
 				return obj;
 			}
 			catch (Exception exception)

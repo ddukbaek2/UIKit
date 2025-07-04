@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
@@ -13,7 +14,7 @@ namespace UIKit
 	public class UIBase : UIBehaviour
 	{
 		#region INSPECTOR
-		[SerializeField] private RectTransform m_RectTransform;
+		[SerializeField] protected RectTransform m_RectTransform;
 		#endregion
 
 		/// <summary>
@@ -43,6 +44,16 @@ namespace UIKit
 		}
 
 		/// <summary>
+		/// 형제의 갯수 설정.
+		/// </summary>
+		public int SiblingCount => m_RectTransform.parent != null ? m_RectTransform.parent.childCount : 0;
+		
+		/// <summary>
+		/// 형제 순서 설정.
+		/// </summary>
+		public int SiblingIndex { set => m_RectTransform.SetSiblingIndex(value); get => m_RectTransform.GetSiblingIndex(); }
+
+		/// <summary>
 		/// 생성됨.
 		/// </summary>
 		protected override void Awake()
@@ -63,6 +74,29 @@ namespace UIKit
 			base.OnDestroy();
 		}
 
+		/// <summary>
+		/// 부모가 변경됨.
+		/// </summary>
+		protected override void OnTransformParentChanged()
+		{
+			base.OnTransformParentChanged();
+		}
+
+		/// <summary>
+		/// 자식이 변경됨.
+		/// </summary>
+		protected virtual void OnTransformChildrenChanged()
+		{
+		}
+		
+		/// <summary>
+		/// 크기가 변경됨.
+		/// </summary>
+		protected override void OnRectTransformDimensionsChange()
+		{
+			base.OnRectTransformDimensionsChange();
+		}
+		
 		/// <summary>
 		/// 부모 설정.
 		/// </summary>

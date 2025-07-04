@@ -48,8 +48,10 @@ namespace UIKit
 		/// <summary>
 		/// 보이기/감추기 설정.
 		/// </summary>
-		public virtual void SetVisible(bool visible, bool animated)
+		public override void SetVisible(bool visible, bool animated)
 		{
+			// base.SetVisible(visible, animated);
+
 			if (animated)
 			{
 				State.Window.StartCoroutine(VisibleAnimationProcess(visible));
@@ -92,6 +94,5 @@ namespace UIKit
 				SetVisible(false, false);
 			}
 		}
-
 	}
 }

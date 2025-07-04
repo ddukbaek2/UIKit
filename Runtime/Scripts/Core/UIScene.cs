@@ -32,10 +32,24 @@ namespace UIKit
 		/// </summary>
 		public List<UIWindow> Windows { set => SetWindows(value); get => m_Windows; }
 
-		///// <summary>
-		///// 포커스를 가진 윈도우 프로퍼티.
-		///// </summary>
-		//public UIWindow FocusWindow => m_Windows.Count > 0 ? m_Windows[0] : null;
+		/// <summary>
+		/// 키 윈도우 프로퍼티.
+		/// </summary>
+		public UIWindow KeyWindow
+		{
+			get
+			{
+				var windowCount = m_Windows.Count;
+				for (var i = 0; i < windowCount; ++i)
+				{
+					var window = m_Windows[i];
+					if (window.IsKeyWindow)
+						return window;
+				}
+
+				return null;
+			}
+		}
 
 		/// <summary>
 		/// 생성됨.

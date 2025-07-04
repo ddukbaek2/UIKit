@@ -52,16 +52,17 @@ namespace UIKit
 		public UIApplication(UIScene scene = null, bool useDefaultEventSystem = true) : base()
 		{
 			// 루트 트랜스폼 생성.
-			var obj = new GameObject("UIKit");
-			obj.layer = LayerMask.NameToLayer("UI");
-			GameObject.DontDestroyOnLoad(obj);
-			m_UIKitTransform = obj.GetComponent<Transform>();
+			var uikit = GameObject.Find("UIKit");
+			if (uikit == null)
+				uikit = new GameObject("UIKit");
+			uikit.layer = LayerMask.NameToLayer("UI");
+			GameObject.DontDestroyOnLoad(uikit);
+			m_UIKitTransform = uikit.GetComponent<Transform>();
 
 			// 기본 벤트 시스템 생성.
 			if (useDefaultEventSystem)
 			{
-				var asset = Resources.Load<GameObject>("EventSystem");
-				obj = GameObject.Instantiate<GameObject>(asset);
+				var obj = AssetLoader.Instantiate("UI/EventSystem");
 				obj.name = "EventSystem";
 				obj.transform.SetParent(m_UIKitTransform);
 				var eventSystem = obj.GetComponent<EventSystem>();

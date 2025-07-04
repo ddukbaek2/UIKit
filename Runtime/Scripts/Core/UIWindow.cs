@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -20,6 +21,11 @@ namespace UIKit
 		#endregion
 
 		/// <summary>
+		/// 키 윈도우 여부.
+		/// </summary>
+		private bool m_IsKeyWindow;
+
+		/// <summary>
 		/// 씬.
 		/// </summary>
 		private UIScene m_Scene;
@@ -27,7 +33,12 @@ namespace UIKit
 		/// <summary>
 		/// 상태.
 		/// </summary>
-		private UIState m_State;
+		private UIState m_RootState;
+
+		/// <summary>
+		/// 키 윈도우 여부 프로퍼티.
+		/// </summary>
+		public bool IsKeyWindow => m_IsKeyWindow;
 
 		/// <summary>
 		/// 씬 프로퍼티.
@@ -37,7 +48,7 @@ namespace UIKit
 		/// <summary>
 		/// 상태 프로퍼티.
 		/// </summary>
-		public UIState State { set => SetState(value); get => m_State; }
+		public UIState RootState { set => SetRootState(value); get => m_RootState; }
 
 		/// <summary>
 		/// 생성됨.
@@ -49,8 +60,9 @@ namespace UIKit
 			var type = GetType();
 			Debug.Log($"UIWindow.Awake(): Class: \"{type.Name}\"");
 
+			m_IsKeyWindow = false;
 			m_Scene = null;
-			m_State = null;
+			m_RootState = null;
 
 			// 컴포넌트 연결.
 			m_Canvas = GetComponent<Canvas>();
@@ -89,24 +101,44 @@ namespace UIKit
 		/// <summary>
 		/// 컨트롤러 설정.
 		/// </summary>
-		public void SetState(UIState state)
+		public void SetRootState(UIState rootState)
 		{
 			// 이전 처리.
-			if (m_State != null)
+			if (m_RootState != null)
 			{
 			}
 
-			m_State = state;
+			m_RootState = rootState;
 
 			// 이후 처리.
-			if (m_State != null)
+			if (m_RootState != null)
 			{
 				// 윈도우 설정.
-				m_State.SetWindow(this);
+				m_RootState.SetWindow(this);
 
-				// 상태 진입 프로세스.
-				UIState.EnterStateProcess(this, null, m_State, false);
+				// 키 윈도우로 만들고 화면에 표시.
+				MakeKeyAndVisible();
 			}
+		}
+
+		/// <summary>
+		/// 키 윈도우로 만들고 화면에 표시.
+		/// </summary>
+		public void MakeKeyAndVisible()
+		{
+			if (m_RootState == null)
+				throw new NullReferenceException();
+
+			// 현재 윈도우를 키 윈도우로 변경.
+			var windowCount = m_Scene.Windows.Count;
+			for (var i = 0; i < windowCount; ++i)
+			{
+				var window = m_Scene.Windows[i];
+				window.m_IsKeyWindow = false;
+			}
+			m_IsKeyWindow = true;
+			
+			UIState.EnterStateProcess(this, null, m_RootState, false);
 		}
 	}
 }
