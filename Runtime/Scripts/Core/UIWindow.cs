@@ -12,7 +12,7 @@ namespace UIKit
 	/// <para>독립된 UI 출력 단위.</para>
 	/// </summary>
 	[AssetPath("UIWindow"), RequireComponent(typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster))]
-	public class UIWindow : UIBase
+	public class UIWindow : UINode
 	{
 		#region INSPECTOR
 		[SerializeField] private Canvas m_Canvas;
@@ -57,8 +57,7 @@ namespace UIKit
 		{
 			base.Awake();
 
-			var type = GetType();
-			Debug.Log($"UIWindow.Awake(): Class: \"{type.Name}\"");
+			Print("UIWindow", "Awake");
 
 			m_IsKeyWindow = false;
 			m_Scene = null;
