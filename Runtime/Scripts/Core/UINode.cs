@@ -13,7 +13,7 @@ namespace UIKit
 	/// <para>INode 인터페이스 구현체.</para>
 	/// </summary>
 	// [RequireComponent(typeof(RectTransform))]
-	public class UINode : UIBehaviour, INode
+	public partial class UINode : UIBehaviour, INode<UINode>
 	{
 		/// <summary>
 		/// 렉트 트랜스폼.
@@ -23,12 +23,12 @@ namespace UIKit
 		/// <summary>
 		/// 부모 노드.
 		/// </summary>
-		private INode m_Parent;
+		private UINode m_Parent;
 
 		/// <summary>
 		/// 자식 목록 노드.
 		/// </summary>
-		private List<INode> m_Children;
+		private List<UINode> m_Children;
 		
 		/// <summary>
 		/// UI 트랜스폼 프로퍼티.
@@ -57,42 +57,6 @@ namespace UIKit
 		}
 
 		/// <summary>
-		/// 루트 노드 여부 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public bool IsRoot => NodeUtility.IsRoot(this);
-
-		/// <summary>
-		/// 리프 노드 여부 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public bool IsLeaf => NodeUtility.IsLeaf(this);
-
-		/// <summary>
-		/// 루트 노드 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public INode Root => NodeUtility.GetRoot<UINode>(this);
-
-		/// <summary>
-		/// 리프 노드 목록 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public List<INode> Leaves => NodeUtility.GetLeaves<INode>(this);
-
-		/// <summary>
-		/// 부모 노드 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public INode Parent { set => SetParent(value); get => m_Parent; }
-
-		/// <summary>
-		/// 자식 목록 노드 프로퍼티.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public List<INode> Children => m_Children;
-
-		/// <summary>
 		/// 형제의 갯수 설정 프로퍼티.
 		/// </summary>
 		public int SiblingCount => m_RectTransform.parent != null ? m_RectTransform.parent.childCount : 0;
@@ -114,7 +78,7 @@ namespace UIKit
 				m_RectTransform = GetComponent<RectTransform>();
 
 			m_Parent = null;
-			m_Children = new List<INode>();
+			m_Children = new List<UINode>();
 		}
 
 		/// <summary>
@@ -151,13 +115,13 @@ namespace UIKit
 		/// <summary>
 		/// UIView 계층구조 갱신.
 		/// </summary>
-		public void UpdateViewHierarchy(Action<INode> onParentChanged = null, Action<INode> onChildAdded = null, Action<INode> onChildRemoved = null, Action<int, int, INode> onChildChanged = null)
+		public void UpdateViewHierarchy(Action<UINode> onParentChanged = null, Action<UINode> onChildAdded = null, Action<UINode> onChildRemoved = null, Action<int, int, UINode> onChildChanged = null)
 		{
 			// 부모 변경 감지.
 			var parentTransform = RectTransform.parent;
 			if (parentTransform != null)
 			{
-				var parent = parentTransform.GetComponent<INode>();
+				var parent = parentTransform.GetComponent<UINode>();
 				if (m_Parent == null)
 				{
 					if (parent != null)
@@ -247,52 +211,13 @@ namespace UIKit
 		/// <summary>
 		/// 부모 노드 설정.
 		/// </summary>
-		public virtual void SetParent(INode node)
+		public void SetParent(UINode node)
 		{
 			m_Parent = node;
 			if (m_Parent != null)
 			{
-				if (node is UINode)
-				{
-					SetParentRectTransform(((UINode)node).RectTransform);
-				}
+				SetParentRectTransform(node.RectTransform);
 			}
-		}
-
-		/// <summary>
-		/// 자식 노드 추가.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public void AddChild(INode node)
-		{
-			NodeUtility.AddChild(this, node);
-		}
-
-		/// <summary>
-		/// 자식 노드 제거.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public void RemoveChild(INode node)
-		{
-			NodeUtility.RemoveChild(this, node);
-		}
-
-		/// <summary>
-		/// 모든 자식 노드 제거.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public void RemoveAllChildren()
-		{
-			NodeUtility.RemoveAllChildren(this);
-		}
-		
-		/// <summary>
-		/// 대상 노드가 자식 노드에 포함되는지 여부.
-		/// <para>INode 인터페이스 구현.</para>
-		/// </summary>
-		public bool IsChild(INode node)
-		{
-			return NodeUtility.IsChild(this, node);
 		}
 		
 		/// <summary>

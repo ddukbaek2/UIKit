@@ -7,29 +7,19 @@ namespace UIKit
 	/// 노드.
 	/// <para>INode 인터페이스 구현체.</para>
 	/// </summary>
-	public partial class Node : Disposable, INode<Node>
+	public partial class Node
 	{
-		/// <summary>
-		/// 부모 노드.
-		/// </summary>
-		private Node m_Parent;
-
-		/// <summary>
-		/// 자식 노드 목록.
-		/// </summary>
-		private List<Node> m_Children;
-
 		/// <summary>
 		/// 루트 노드 여부 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public bool IsRoot => NodeUtility.IsRoot(this);
+		public bool IsRoot => m_Parent == null;
 
 		/// <summary>
 		/// 리프 노드 여부 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public bool IsLeaf => NodeUtility.IsLeaf(this);
+		public bool IsLeaf => m_Children.Count == 0;
 		
 		/// <summary>
 		/// 루트 노드 프로퍼티.
@@ -41,43 +31,25 @@ namespace UIKit
 		/// 리프 노드 목록 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		IEnumerable<INode> INode.Leaves => NodeUtility.GetLeaves(this);
+		IEnumerable<INode> INode.Leaves => NodeUtility.ToLeaves(this);
 
 		/// <summary>
 		/// 부모 노드 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		INode INode.Parent { set => m_Parent = (Node)value; get => m_Parent; }
+		INode INode.Parent { set => SetParent((Node)value); get => m_Parent; }
 		
 		/// <summary>
 		/// 형제 노드 목록 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		IEnumerable<INode> INode.Siblings => NodeUtility.GetSiblings(this);
+		IEnumerable<INode> INode.Siblings => NodeUtility.ToSiblings(this);
 		
 		/// <summary>
 		/// 자식 노드 목록 프로퍼티.
 		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
 		IEnumerable<INode> INode.Children => m_Children;
-		
-		/// <summary>
-		/// 생성됨.
-		/// </summary>
-		public Node() : base()
-		{
-			m_Parent = null;
-			m_Children = new List<Node>();
-		}
-
-		/// <summary>
-		/// 해제됨.
-		/// </summary>
-		protected override void OnDispose(bool explicitDisposing)
-		{
-			m_Parent = null;
-			m_Children.Clear();
-		}
 
 		/// <summary>
 		/// 자식 노드 추가.
@@ -85,7 +57,15 @@ namespace UIKit
 		/// </summary>
 		void INode.AddChild(INode node)
 		{
-			NodeUtility.AddChild(this, node);
+			if (node == null)
+				return;
+			if (!(node is Node))
+				return;
+			if (m_Children.Contains((Node)node))
+				return;
+
+			node.Parent = this;
+			m_Children.Add((Node)node);
 		}
 
 		/// <summary>
@@ -94,7 +74,15 @@ namespace UIKit
 		/// </summary>
 		void INode.RemoveChild(INode node)
 		{
-			NodeUtility.RemoveChild(this, node);
+			if (node == null)
+				return;
+			if (!(node is Node))
+				return;
+			if (!m_Children.Contains((Node)node))
+				return;
+
+			node.Parent = null;
+			m_Children.Remove((Node)node);
 		}
 
 		/// <summary>
@@ -112,7 +100,11 @@ namespace UIKit
 		/// </summary>
 		bool INode.IsChild(INode node)
 		{
-			return NodeUtility.IsChild(this, node);
+			if (node == null)
+				return false;
+			if (!m_Children.Contains((Node)node))
+				return false;
+			return true;
 		}
 	}
 }

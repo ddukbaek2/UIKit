@@ -7,7 +7,7 @@ namespace UIKit
 	/// 노드.
 	/// <para>INode 제네릭 인터페이스 구현체.</para>
 	/// </summary>
-	public partial class Node : Disposable, INode<Node>
+	public partial class Node
 	{
 		/// <summary>
 		/// 루트 노드 프로퍼티.
@@ -19,25 +19,25 @@ namespace UIKit
 		/// 리프 노드 목록 프로퍼티.
 		/// <para>INode 제네릭 인터페이스 구현.</para>
 		/// </summary>
-		public List<Node> Leaves => NodeUtility<Node>.GetLeaves(this);
+		public IEnumerable<Node> Leaves => NodeUtility<Node>.ToLeaves(this);
 
 		/// <summary>
 		/// 부모 노드 프로퍼티.
 		/// <para>INode 제네릭 인터페이스 구현.</para>
 		/// </summary>
-		public Node Parent { set => m_Parent = value; get => (Node)m_Parent; }
+		public Node Parent { set => SetParent(value); get => m_Parent; }
 		
 		/// <summary>
 		/// 형제 노드 목록 프로퍼티.
 		/// <para>INode 제네릭 인터페이스 구현.</para>
 		/// </summary>
-		public List<Node> Siblings => NodeUtility<Node>.GetSiblings(this);
+		public IEnumerable<Node> Siblings => NodeUtility<Node>.ToSiblings(this);
 		
 		/// <summary>
 		/// 자식 노드 목록 프로퍼티.
 		/// <para>INode 제네릭 인터페이스 구현.</para>
 		/// </summary>
-		public List<Node> Children => m_Children;
+		public IEnumerable<Node> Children => m_Children;
 
 		/// <summary>
 		/// 자식 노드 추가.
@@ -45,7 +45,13 @@ namespace UIKit
 		/// </summary>
 		public void AddChild(Node node)
 		{
-			NodeUtility<Node>.AddChild(this, node);
+			if (node == null)
+				return;
+			if (m_Children.Contains(node))
+				return;
+			
+			node.Parent = this;
+			m_Children.Add(node);
 		}
 
 		/// <summary>
@@ -54,7 +60,13 @@ namespace UIKit
 		/// </summary>
 		public void RemoveChild(Node node)
 		{
-			NodeUtility<Node>.RemoveChild(this, node);
+			if (node == null)
+				return;
+			if (!m_Children.Contains(node))
+				return;
+			
+			node.Parent = null;
+			m_Children.Remove(node);
 		}
 
 		/// <summary>
@@ -63,7 +75,11 @@ namespace UIKit
 		/// </summary>
 		public bool IsChild(Node node)
 		{
-			return NodeUtility.IsChild(this, node);
+			if (node == null)
+				return false;
+			if (!m_Children.Contains(node))
+				return false;
+			return true;
 		}
 	}
 }
