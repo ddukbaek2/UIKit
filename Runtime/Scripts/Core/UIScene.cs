@@ -54,13 +54,10 @@ namespace UIKit
 		/// <summary>
 		/// 생성됨.
 		/// </summary>
-		public UIScene(UIWindow window = null, UIApplication application = null) : base()
+		public UIScene() : base()
 		{
 			m_Application = null;
 			m_Windows = new List<UIWindow>();
-
-			SetApplication(application);
-			AddWindow(window);
 		}
 
 		/// <summary>
@@ -117,6 +114,7 @@ namespace UIKit
 				return false;
 
 			m_Windows.Add(window);
+			window.Order = m_Windows.Count - 1;
 			window.SetScene(this);
 			window.SetParentRectTransform(Application.UIKitTransform);
 			return true;

@@ -219,7 +219,7 @@ namespace UIKit
 				SetParentRectTransform(node.RectTransform);
 			}
 		}
-		
+
 		/// <summary>
 		/// 좌상 기준의 오브젝트 설정.
 		/// </summary>

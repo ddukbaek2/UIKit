@@ -33,7 +33,7 @@ namespace UIKit
 		/// <summary>
 		/// 수동 인스턴스 등록.
 		/// </summary>
-		public static void Register(Type instanceType, object instance)
+		public static void Register(object instance, Type instanceType)
 		{
 			if (s_Cache.ContainsKey(instanceType))
 			{
@@ -51,13 +51,13 @@ namespace UIKit
 		public static void Register<T>(T instance) where T : class
 		{
 			var instanceType = typeof(T);
-			Register(instanceType, instance);
+			Register(instance, instanceType);
 		}
 
 		/// <summary>
 		/// 수동 인스턴스 등록 해제.
 		/// </summary>
-		public static void Unregister(Type instanceType, object instance)
+		public static void Unregister(object instance, Type instanceType)
 		{
 			if (s_Cache.ContainsKey(instanceType))
 			{
@@ -75,7 +75,7 @@ namespace UIKit
 		public static void Unregister<T>(T instance) where T : class
 		{
 			var instanceType = typeof(T);
-			Unregister(instanceType, instance);
+			Unregister(instance, instanceType);
 		}
 
 		/// <summary>
@@ -136,7 +136,7 @@ namespace UIKit
 				instance = Reflector.CreateInstance(instanceType);
 			}
 
-			Register(instanceType, instance);
+			Register(instance, instanceType);
 			return instance;
 		}
 

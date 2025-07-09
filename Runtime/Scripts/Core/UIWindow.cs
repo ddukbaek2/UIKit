@@ -51,6 +51,11 @@ namespace UIKit
 		public UIState RootState { set => SetRootState(value); get => m_RootState; }
 
 		/// <summary>
+		/// 출력 순서 설정.
+		/// </summary>
+		public int Order { set => m_Canvas.sortingOrder = value; get => m_Canvas.sortingOrder; }
+
+		/// <summary>
 		/// 생성됨.
 		/// </summary>
 		protected override void Awake()
@@ -116,28 +121,51 @@ namespace UIKit
 				m_RootState.SetWindow(this);
 
 				// 키 윈도우로 만들고 화면에 표시.
-				MakeKeyAndVisible();
+				// Present();
 			}
 		}
 
 		/// <summary>
-		/// 키 윈도우로 만들고 화면에 표시.
+		/// 현재 윈도우를 키 윈도우로 만듬 + 현재 윈도우의 상태를 화면에 표시.
+		/// <para>makeKeyAndVisible()의 암시적 설계 이슈 따라가지 않음.</para>
 		/// </summary>
+		[Obsolete("")]
 		public void MakeKeyAndVisible()
+		{
+			Present(true);
+		}
+		
+		/// <summary>
+		/// 현재 윈도우를 키 윈도우로 만듬 + 현재 윈도우의 상태를 화면에 표시.
+		/// <para>makeKeyAndVisible()의 암시적 설계 이슈 따라가지 않음.</para>
+		/// </summary>
+		public void Present(bool useKeyWindow = false)
 		{
 			if (m_RootState == null)
 				throw new NullReferenceException();
 
 			// 현재 윈도우를 키 윈도우로 변경.
-			var windowCount = m_Scene.Windows.Count;
-			for (var i = 0; i < windowCount; ++i)
+			if (useKeyWindow)
 			{
-				var window = m_Scene.Windows[i];
-				window.m_IsKeyWindow = false;
+				var windowCount = m_Scene.Windows.Count;
+				for (var i = 0; i < windowCount; ++i)
+				{
+					var window = m_Scene.Windows[i];
+					window.m_IsKeyWindow = false;
+				}
+				m_IsKeyWindow = true;
 			}
-			m_IsKeyWindow = true;
 			
 			UIState.EnterStateProcess(this, null, m_RootState, false);
+		}
+
+		/// <summary>
+		/// 보이기/감추기 설정.
+		/// </summary>
+		public virtual void SetVisible(bool visible)
+		{
+			// gameObject.SetActive(visible);
+			m_Canvas.enabled = visible;
 		}
 	}
 }
