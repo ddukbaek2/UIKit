@@ -9,10 +9,11 @@ using UnityEngine.UI;
 namespace UIKit
 {
 	/// <summary>
-	/// 기본 컴포넌트.
+	/// UI를 위한 컴포넌트.
+	/// <para>INode 인터페이스 구현체.</para>
 	/// </summary>
 	// [RequireComponent(typeof(RectTransform))]
-	public class UINode : UIBehaviour
+	public class UINode : UIBehaviour, INode
 	{
 		/// <summary>
 		/// 렉트 트랜스폼.
@@ -22,12 +23,12 @@ namespace UIKit
 		/// <summary>
 		/// 부모 노드.
 		/// </summary>
-		private UINode m_Parent;
+		private INode m_Parent;
 
 		/// <summary>
 		/// 자식 목록 노드.
 		/// </summary>
-		private List<UINode> m_Children;
+		private List<INode> m_Children;
 		
 		/// <summary>
 		/// UI 트랜스폼 프로퍼티.
@@ -57,64 +58,39 @@ namespace UIKit
 
 		/// <summary>
 		/// 루트 노드 여부 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public bool IsRoot => m_Parent == null;
+		public bool IsRoot => NodeUtility.IsRoot(this);
 
 		/// <summary>
 		/// 리프 노드 여부 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public bool IsLeaf => m_Children.Count == 0;
+		public bool IsLeaf => NodeUtility.IsLeaf(this);
 
 		/// <summary>
 		/// 루트 노드 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public UINode Root
-		{
-			get
-			{
-				var view = this;
-				while (view.m_Parent != null)
-					view = view.m_Parent;
-				return view;
-			}
-		}
+		public INode Root => NodeUtility.GetRoot<UINode>(this);
 
-		
 		/// <summary>
 		/// 리프 노드 목록 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public List<UINode> Leaves
-		{
-			get
-			{
-				var nodes = new List<UINode>();
-				void Recursive(UINode node)
-				{
-					for (var i = 0; i < node.m_Children.Count; ++i)
-					{
-						var child = m_Children[i];
-						Recursive(child);
-					}
-					
-					if (node.IsLeaf)
-						nodes.Add(node);
-				}
-
-				Recursive(this);
-				
-				return nodes;
-			}
-		}
+		public List<INode> Leaves => NodeUtility.GetLeaves<INode>(this);
 
 		/// <summary>
 		/// 부모 노드 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public UINode Parent { set => SetParent(value); get => m_Parent; }
+		public INode Parent { set => SetParent(value); get => m_Parent; }
 
 		/// <summary>
 		/// 자식 목록 노드 프로퍼티.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public List<UINode> Children => m_Children;
+		public List<INode> Children => m_Children;
 
 		/// <summary>
 		/// 형제의 갯수 설정 프로퍼티.
@@ -138,7 +114,7 @@ namespace UIKit
 				m_RectTransform = GetComponent<RectTransform>();
 
 			m_Parent = null;
-			m_Children = new List<UINode>();
+			m_Children = new List<INode>();
 		}
 
 		/// <summary>
@@ -175,13 +151,13 @@ namespace UIKit
 		/// <summary>
 		/// UIView 계층구조 갱신.
 		/// </summary>
-		public void UpdateViewHierarchy(Action<UINode> onParentChanged = null, Action<UINode> onChildAdded = null, Action<UINode> onChildRemoved = null, Action<int, int, UINode> onChildChanged = null)
+		public void UpdateViewHierarchy(Action<INode> onParentChanged = null, Action<INode> onChildAdded = null, Action<INode> onChildRemoved = null, Action<int, int, INode> onChildChanged = null)
 		{
 			// 부모 변경 감지.
 			var parentTransform = RectTransform.parent;
 			if (parentTransform != null)
 			{
-				var parent = parentTransform.GetComponent<UINode>();
+				var parent = parentTransform.GetComponent<INode>();
 				if (m_Parent == null)
 				{
 					if (parent != null)
@@ -271,57 +247,52 @@ namespace UIKit
 		/// <summary>
 		/// 부모 노드 설정.
 		/// </summary>
-		public virtual void SetParent(UINode node)
+		public virtual void SetParent(INode node)
 		{
 			m_Parent = node;
 			if (m_Parent != null)
 			{
-				SetParentRectTransform(node.RectTransform);
+				if (node is UINode)
+				{
+					SetParentRectTransform(((UINode)node).RectTransform);
+				}
 			}
 		}
 
 		/// <summary>
 		/// 자식 노드 추가.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public virtual void AddChild(UINode node)
+		public void AddChild(INode node)
 		{
-			if (node == null)
-				return;
-
-			node.SetParent(this);
-			m_Children.Add(node);
+			NodeUtility.AddChild(this, node);
 		}
 
 		/// <summary>
 		/// 자식 노드 제거.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public virtual void RemoveChild(UINode node)
+		public void RemoveChild(INode node)
 		{
-			if (node == null)
-				return;
-
-			node.SetParent(null);
-			m_Children.Remove(node);
+			NodeUtility.RemoveChild(this, node);
 		}
 
 		/// <summary>
 		/// 모든 자식 노드 제거.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public virtual void RemoveAllChildren()
+		public void RemoveAllChildren()
 		{
-			var children = new List<UINode>(m_Children);
-			foreach (var child in children)
-			{
-				RemoveChild(child);
-			}
+			NodeUtility.RemoveAllChildren(this);
 		}
 		
 		/// <summary>
-		/// 자식 노드에 포함되어있는지 여부.
+		/// 대상 노드가 자식 노드에 포함되는지 여부.
+		/// <para>INode 인터페이스 구현.</para>
 		/// </summary>
-		public virtual bool HasChild(UINode node)
+		public bool IsChild(INode node)
 		{
-			return m_Children.Contains(node);
+			return NodeUtility.IsChild(this, node);
 		}
 		
 		/// <summary>
@@ -385,6 +356,64 @@ namespace UIKit
 		{
 			var type = GetType();
 			Debug.Log($"[{category}] {type.Name}.{methodName}()");
+		}
+		
+		
+		/// <summary>
+		/// 대상 오브젝트로부터 노드를 가져오고, 없으면 추가.
+		/// </summary>
+		public UINode CreateNodeFromChildName(string childName)
+		{
+			var view = CreateNodeFromChildName<UINode>(childName);
+			return view;
+		}
+
+		/// <summary>
+		/// 대상 오브젝트로부터 노드를 가져오고, 없으면 추가.
+		/// </summary>
+		public TUINode CreateNodeFromChildName<TUINode>(string childName) where TUINode : UINode
+		{
+			var target = RectTransform.Find(childName);
+			if (target == null)
+				return null;
+
+			var view = target.GetComponent<TUINode>();
+			if (view == null)
+				view = target.gameObject.AddComponent<TUINode>();
+			return view;
+		}
+
+		/// <summary>
+		/// 프리팹으로부터 노드 생성.
+		/// </summary>
+		public static UINode CreateNodeFromAsset(Type instanceType)
+		{
+			try
+			{
+				var node = AssetLoader.InstantiateWithComponentFromAssetPath(instanceType, typeof(UINode));
+				return node as UINode;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
+		}
+
+		/// <summary>
+		/// 프리팹으로부터 노드 생성.
+		/// </summary>
+		public static TUINode CreateNodeFromAsset<TUINode>() where TUINode : UINode
+		{
+			var instanceType = typeof(TUINode);
+			try
+			{
+				var node = UINode.CreateNodeFromAsset(instanceType);
+				return node as TUINode;
+			}
+			catch (Exception exception)
+			{
+				throw exception;
+			}
 		}
 	}
 }

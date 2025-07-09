@@ -60,7 +60,7 @@ namespace UIKit
 		/// <summary>
 		/// 마스킹 처리 프로퍼티.
 		/// </summary>
-		public bool ClipsToBounds { set => m_Mask.enabled = value; get => m_Mask.enabled; }
+		public bool ClipsToBounds { set => SetMask(value); get => m_Mask.enabled; }
 		
 		/// <summary>
 		/// 생성됨.
@@ -77,13 +77,13 @@ namespace UIKit
 			
 			Print("UIView", "Awake");
 
-			if (m_BackgroundImage == null)
-				m_BackgroundImage = gameObject.GetOrAddComponent<Image>();
-			if (m_Mask == null)
-				m_Mask = gameObject.GetOrAddComponent<Mask>();
+			// if (m_BackgroundImage == null)
+			// 	m_BackgroundImage = gameObject.GetOrAddComponent<Image>();
+			// if (m_Mask == null)
+			// 	m_Mask = gameObject.GetOrAddComponent<Mask>();
 
-			m_BackgroundImage.color = Color.clear;
-			ClipsToBounds = false;
+			// m_BackgroundImage.color = Color.clear;
+			// ClipsToBounds = false;
 		}
 
 		/// <summary>
@@ -131,10 +131,18 @@ namespace UIKit
 		/// </summary>
 		public void SetBackgroundImageColor(Color color)
 		{
-			if (m_BackgroundImage == null)
-				return;
-			
-			m_BackgroundImage.color = color;
+			if (color == Color.clear)
+			{
+				if (m_BackgroundImage != null)
+					GameObject.Destroy(m_BackgroundImage);
+				m_BackgroundImage = null;
+			}
+			else
+			{
+				if (m_BackgroundImage == null)
+					m_BackgroundImage = gameObject.GetOrAddComponent<Image>();
+				m_BackgroundImage.color = color;
+			}
 		}
 		
 		/// <summary>
@@ -149,6 +157,24 @@ namespace UIKit
 			}
 			
 			gameObject.SetActive(visible);
+		}
+
+		/// <summary>
+		/// 마스크 설정.
+		/// </summary>
+		public void SetMask(bool active)
+		{
+			if (active)
+			{
+				if (m_Mask == null)
+					m_Mask = gameObject.GetOrAddComponent<Mask>();
+			}
+			else
+			{
+				if (m_Mask != null)
+					GameObject.Destroy(m_Mask);
+				m_Mask = null;		
+			}
 		}
 		
 		/// <summary>
@@ -171,7 +197,7 @@ namespace UIKit
 		/// </summary>
 		public UIView GetView(string childName)
 		{
-			var view = GetView<UIView>(childName);
+			var view = CreateNodeFromChildName<UIView>(childName);
 			return view;
 		}
 
@@ -180,13 +206,7 @@ namespace UIKit
 		/// </summary>
 		public TUIView GetView<TUIView>(string childName) where TUIView : UIView
 		{
-			var target = RectTransform.Find(childName);
-			if (target == null)
-				return null;
-
-			var view = target.GetComponent<TUIView>();
-			if (view == null)
-				view = target.gameObject.AddComponent<TUIView>();
+			var view = CreateNodeFromChildName<TUIView>(childName);
 			return view;
 		}
 
